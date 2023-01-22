@@ -8,8 +8,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
     permission_classes = () # Админ или только чтение
     filter_backends = (filters.SearchFilter)
     search_fields = ['name']
-    lookup_field = ['slug']
-    
+
     def perform_create(self, serializer):
         return super().perform_create(serializer)
     
@@ -22,7 +21,6 @@ class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = [] # Админ или только чтение
     filter_backends = (filters.SearchFilter)
     search_fields = ['name', 'year', 'genre', 'category']
-    lookup_field = ['slug']
 
     def perform_create(self, serializer):
         return super().perform_create(serializer)
@@ -39,7 +37,6 @@ class GenreViewSet(viewsets.ModelViewSet):
     permission_classes = [] # Админ или только чтение
     filter_backends = (filters.SearchFilter)
     search_fields = ['name']
-    lookup_field = ['slug']
 
     def perform_create(self, serializer):
         return super().perform_create(serializer)
