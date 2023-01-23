@@ -26,8 +26,7 @@ class Title(models.Model):
         related_name='titles', 
         blank=True, null=True
     )
-    genre = models.ManyToManyField(Genre)
-from django.db import models
+    genre = models.ManyToManyField(Genre,)
 
 
 class Review(models.Model):
