@@ -1,12 +1,17 @@
-from reviews.models import Category, Title, Genre
+from reviews.models import Category, Title, Genre, Review
 from rest_framework import viewsets, filters
-from .serializers import CategorySerializer, TitleSerializer, GenreSerializer
+from rest_framework.generics import get_object_or_404
+from rest_framework.pagination import LimitOffsetPagination
+from .serializers import CategorySerializer, TitleSerializer, GenreSerializer, \
+    CommentSerializer, ReviewSerializer
+
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = () # Админ или только чтение
-    filter_backends = (filters.SearchFilter)
+    filter_backends = (filters.SearchFilter,)
+    pagination_class = LimitOffsetPagination
     search_fields = ['name']
 
     def perform_create(self, serializer):
@@ -19,7 +24,8 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
     permission_classes = [] # Админ или только чтение
-    filter_backends = (filters.SearchFilter)
+    filter_backends = (filters.SearchFilter,)
+    pagination_class = LimitOffsetPagination
     search_fields = ['name', 'year', 'genre', 'category']
 
     def perform_create(self, serializer):
@@ -35,7 +41,8 @@ class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = [] # Админ или только чтение
-    filter_backends = (filters.SearchFilter)
+    filter_backends = (filters.SearchFilter,)
+    pagination_class = LimitOffsetPagination
     search_fields = ['name']
 
     def perform_create(self, serializer):
@@ -43,12 +50,6 @@ class GenreViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance):
         return super().perform_destroy(instance)
-from rest_framework import viewsets
-from rest_framework.generics import get_object_or_404
-
-from api.serializers import CommentSerializer, ReviewSerializer
-from reviews.models import Review, Title
-
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer

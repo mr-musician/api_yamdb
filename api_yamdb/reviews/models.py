@@ -1,6 +1,7 @@
 from django.db import models
 from users.models import CustomUser
 
+
 class Category(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(unique=True, max_length=50)
@@ -21,12 +22,24 @@ class Title(models.Model):
     name = models.CharField(max_length=256)
     description = models.TextField()
     year = models.IntegerField()
+    genre = models.ManyToManyField(Genre,)
     category = models.ForeignKey(
-        Category, on_delete=models.SET_NULL,
+        Category,
+        on_delete=models.SET_NULL,
         related_name='titles', 
         blank=True, null=True
     )
-    genre = models.ManyToManyField(Genre,)
+    
+    def __str__(self) -> str:
+        return super().__str__()
+
+
+class GenreTitle(models.Model):
+    genre = models.ForeignKey(Genre,on_delete=models.CASCADE)
+    title = models.ForeignKey(Title,on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.slug
 
 
 class Review(models.Model):
@@ -60,7 +73,4 @@ class Comment(models.Model):
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
 
     def __str__(self):
-        return self.text
-
-    def __str__(self) -> str:
         return self.text
