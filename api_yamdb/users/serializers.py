@@ -1,27 +1,6 @@
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from rest_framework import serializers
-
 from .models import CustomUser
-
-
-class RegistrationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CustomUser
-        fields = ('email', 'username')
-
-    def validate(self, data):
-        if data.get('username') == 'me':
-            raise serializers.ValidationError(
-                'Использовать имя me запрещено'
-            )
-        if CustomUser.objects.filter(username=data.get('username')):
-            raise serializers.ValidationError(
-                'Пользователь с таким username уже существует'
-            )
-        if CustomUser.objects.filter(email=data.get('email')):
-            raise serializers.ValidationError(
-                'Пользователь с таким email уже существует'
-            )
-        return data
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -37,10 +16,22 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
 
-class TokenSerializer(serializers.ModelSerializer):
+class RegistrationSerializer(serializers.Serializer):
+    username = serializers.CharField(
+        required=True,
+        max_length=150,
+        validators=[UnicodeUsernameValidator()]
+    )
+    email = serializers.EmailField(
+        required=True, max_length=254, )
+
+    def validate_username(self, value):
+        if value == 'me':
+            raise serializers.ValidationError(
+                'Использование "me" в имени пользователя запрещено.')
+        return value
+
+
+class TokenSerializer(serializers.Serializer):
     username = serializers.CharField()
     confirmation_code = serializers.CharField()
-
-    class Meta:
-        model = CustomUser
-        fields = ('username', 'confirmation_code')

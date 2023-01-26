@@ -1,17 +1,16 @@
-from smtplib import SMTPResponseException
-
 from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, status, viewsets, permissions, mixins
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import CustomUser
 from .pagination import UserPagination
-from .permissions import IsAdmin, IsSuperUserOrIsAdminOnly
+from .permissions import IsSuperUserOrIsAdminOnly
 from .serializers import (
     RegistrationSerializer, TokenSerializer, UserSerializer
 )
@@ -72,38 +71,22 @@ class UserViewSet(mixins.ListModelMixin,
 def signup(request):
     serializer = RegistrationSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    username = serializer.validated_data.get('username')
-    email = serializer.validated_data.get('email')
-    user, created = CustomUser.objects.get_or_create(
-        username=username, email=email
-    )
-
-    if not created:
+    try:
+        user, _ = CustomUser.objects.get_or_create(**serializer.validated_data)
+    except IntegrityError:
         return Response(
-            data={
-                'error': 'Данный пользователь уже зарегистрирован.'
-            },
+            'Такой логин или email уже существуют',
             status=status.HTTP_400_BAD_REQUEST
         )
-
-    token = default_token_generator.make_token(user)
-    try:
-        send_mail(
-            'Код для получения токена',
-            f'{token}',
-            f'{settings.EMAIL_DEBUG}',
-            [email],
-            fail_silently=False
-        )
-        return Response(data=serializer.data, status=status.HTTP_200_OK)
-    except SMTPResponseException:
-        user.delete()
-        return Response(
-            data={
-                'error': 'Ошибка отправки кода подтверждения.'
-            },
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+    confirmation_code = default_token_generator.make_token(user)
+    send_mail(
+        'Код подтверждения регистрации.',
+        f'{confirmation_code}',
+        f'{settings.EMAIL_DEBUG}',
+        [user.email],
+        fail_silently=False
+    )
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
@@ -116,9 +99,9 @@ def create_token(request):
     if default_token_generator.check_token(
             user, serializer.validated_data['confirmation_code']
     ):
-        token = AccessToken.for_user(user)
-        return Response({'token': f'{token}'}, status=status.HTTP_200_OK)
+        token = RefreshToken.for_user(user)
+        return Response(
+            {'access': str(token.access_token)}, status=status.HTTP_200_OK)
     return Response(
-        {'message': 'Пользователь не обнаружен'},
-        status=status.HTTP_400_BAD_REQUEST
+        serializer.errors, status=status.HTTP_400_BAD_REQUEST
     )
