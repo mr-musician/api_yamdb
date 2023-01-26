@@ -42,3 +42,6 @@ class CustomUser(AbstractUser):
     @property
     def is_user(self):
         return self.role == self.USER
+
+    def __str__(self):
+        return self.username
