@@ -1,55 +1,42 @@
 from reviews.models import Category, Title, Genre, Review
 from rest_framework import viewsets, filters
+from rest_framework import permissions
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import LimitOffsetPagination
-from .serializers import CategorySerializer, TitleSerializer, GenreSerializer, \
-    CommentSerializer, ReviewSerializer
+from .serializers import CategorySerializer, TitleReadSerializer, \
+    TitleWriteSerializer, GenreSerializer,CommentSerializer, ReviewSerializer
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = () # Админ или только чтение
-    filter_backends = (filters.SearchFilter,)
+    permission_classes = ()
+    filter_backends = (filters.SearchFilter, )
     pagination_class = LimitOffsetPagination
-    search_fields = ['name']
-
-    def perform_create(self, serializer):
-        return super().perform_create(serializer)
-    
-    def perform_destroy(self, instance):
-        return super().perform_destroy(instance)
+    search_fields = ('name', )
+    lookup_field = 'slug'
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
-    serializer_class = TitleSerializer
-    permission_classes = [] # Админ или только чтение
-    filter_backends = (filters.SearchFilter,)
+    permission_classes = ()
+    filter_backends = (filters.SearchFilter, )
     pagination_class = LimitOffsetPagination
-    search_fields = ['name', 'year', 'genre', 'category']
 
-    def perform_create(self, serializer):
-        return super().perform_create(serializer)
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return TitleReadSerializer
+        return TitleWriteSerializer
 
-    def perform_update(self, serializer):
-        return super().perform_update(serializer)
-    
-    def perform_destroy(self, instance):
-        return super().perform_destroy(instance)
 
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = [] # Админ или только чтение
+    permission_classes = [] # !!!
     filter_backends = (filters.SearchFilter,)
     pagination_class = LimitOffsetPagination
-    search_fields = ['name']
+    search_fields = ('name', )
+    lookup_field = 'slug'
 
-    def perform_create(self, serializer):
-        return super().perform_create(serializer)
-
-    def perform_destroy(self, instance):
-        return super().perform_destroy(instance)
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
