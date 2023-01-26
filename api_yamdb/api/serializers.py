@@ -20,11 +20,13 @@ class ReviewSerializer(serializers.ModelSerializer):
         fields = '__all__'
         model = Review
 
+
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         exclude = ('id', )
         model = Genre
         lookup_field = 'slug'
+
 
 class TitleReadSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
@@ -36,6 +38,7 @@ class TitleReadSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Title
+
 
 class TitleWriteSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(
