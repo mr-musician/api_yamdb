@@ -9,21 +9,21 @@ class CustomUser(AbstractUser):
     USER_ROLE = [
         (USER, 'user'),
         (ADMIN, 'admin'),
-        (MODERATOR, 'moderator')
+        (MODERATOR, 'moderator'),
     ]
     bio = models.TextField(
         blank=True,
-        verbose_name='Биография'
+        verbose_name='Биография',
     )
     email = models.EmailField(
         unique=True,
-        verbose_name='Электронная почта'
+        verbose_name='Электронная почта',
     )
     role = models.CharField(
         max_length=20,
         choices=USER_ROLE,
         default=USER,
-        verbose_name='Роль пользователя'
+        verbose_name='Роль пользователя',
     )
 
     def save(self, *args, **kwargs):

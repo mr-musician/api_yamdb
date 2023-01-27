@@ -1,6 +1,7 @@
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from rest_framework import serializers
-from .models import CustomUser
+
+from users.models import CustomUser
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -12,7 +13,7 @@ class UserSerializer(serializers.ModelSerializer):
             'email',
             'first_name',
             'last_name',
-            'role'
+            'role',
         )
 
 
@@ -20,15 +21,18 @@ class RegistrationSerializer(serializers.Serializer):
     username = serializers.CharField(
         required=True,
         max_length=150,
-        validators=[UnicodeUsernameValidator()]
+        validators=[UnicodeUsernameValidator()],
     )
     email = serializers.EmailField(
-        required=True, max_length=254, )
+        required=True,
+        max_length=254,
+    )
 
     def validate_username(self, value):
         if value == 'me':
             raise serializers.ValidationError(
-                'Использование "me" в имени пользователя запрещено.')
+                'Использование "me" в имени пользователя запрещено.',
+            )
         return value
 
 

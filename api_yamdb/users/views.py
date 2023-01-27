@@ -3,22 +3,26 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
-from rest_framework import filters, status, viewsets, permissions, mixins
+from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import CustomUser
-from .pagination import UserPagination
-from .permissions import IsSuperUserOrIsAdminOnly
-from .serializers import (
-    RegistrationSerializer, TokenSerializer, UserSerializer
+from users.models import CustomUser
+from users.pagination import UserPagination
+from users.permissions import IsSuperUserOrIsAdminOnly
+from users.serializers import (
+    RegistrationSerializer,
+    TokenSerializer,
+    UserSerializer,
 )
 
 
-class UserViewSet(mixins.ListModelMixin,
-                  mixins.CreateModelMixin,
-                  viewsets.GenericViewSet):
+class UserViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet,
+):
     queryset = CustomUser.objects.all().order_by('id')
     serializer_class = UserSerializer
     permission_classes = (IsSuperUserOrIsAdminOnly,)
@@ -30,7 +34,7 @@ class UserViewSet(mixins.ListModelMixin,
         detail=False,
         methods=['get', 'patch', 'delete'],
         url_path=r'(?P<username>[\w.@+-]+)',
-        url_name='get_user'
+        url_name='get_user',
     )
     def get_user_by_username(self, request, username):
         user = get_object_or_404(CustomUser, username=username)
@@ -50,7 +54,7 @@ class UserViewSet(mixins.ListModelMixin,
         methods=['get', 'patch'],
         url_path='me',
         url_name='me',
-        permission_classes=(permissions.IsAuthenticated,)
+        permission_classes=(permissions.IsAuthenticated,),
     )
     def get_me_data(self, request):
         if request.method == 'PATCH':
@@ -58,7 +62,7 @@ class UserViewSet(mixins.ListModelMixin,
                 request.user,
                 data=request.data,
                 partial=True,
-                context={'request': request}
+                context={'request': request},
             )
             serializer.is_valid(raise_exception=True)
             serializer.save(role=request.user.role)
@@ -76,7 +80,7 @@ def signup(request):
     except IntegrityError:
         return Response(
             'Такой логин или email уже существуют',
-            status=status.HTTP_400_BAD_REQUEST
+            status=status.HTTP_400_BAD_REQUEST,
         )
     confirmation_code = default_token_generator.make_token(user)
     send_mail(
@@ -84,7 +88,7 @@ def signup(request):
         f'{confirmation_code}',
         f'{settings.EMAIL_DEBUG}',
         [user.email],
-        fail_silently=False
+        fail_silently=False,
     )
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -94,14 +98,19 @@ def create_token(request):
     serializer = TokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     user = get_object_or_404(
-        CustomUser, username=serializer.validated_data['username']
+        CustomUser,
+        username=serializer.validated_data['username'],
     )
     if default_token_generator.check_token(
-            user, serializer.validated_data['confirmation_code']
+        user,
+        serializer.validated_data['confirmation_code'],
     ):
         token = RefreshToken.for_user(user)
         return Response(
-            {'access': str(token.access_token)}, status=status.HTTP_200_OK)
+            {'access': str(token.access_token)},
+            status=status.HTTP_200_OK,
+        )
     return Response(
-        serializer.errors, status=status.HTTP_400_BAD_REQUEST
+        serializer.errors,
+        status=status.HTTP_400_BAD_REQUEST,
     )
