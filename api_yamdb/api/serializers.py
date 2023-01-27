@@ -1,7 +1,8 @@
 from rest_framework import serializers
+
 from reviews.models import Title, Category, Genre, Comment, Review
 
- 
+
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         exclude = ('id', )
@@ -10,24 +11,26 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    author = serializers.StringRelatedField(
-        read_only=True
+    review = serializers.SlugRelatedField(
+        slug_field='text',
+        read_only=True,
+    )
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True,
     )
 
     class Meta:
-        fields = '__all__'
         model = Comment
+        fields = '__all__'
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    author = serializers.StringRelatedField(
-        read_only=True
-    )
+    author = serializers.StringRelatedField(read_only=True)
 
     class Meta:
         model = Review
-        fields = (
-            'id', 'text', 'author', 'score', 'pub_date')
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
 
     def validate(self, data):
         if not self.context.get('request').method == 'POST':
@@ -62,7 +65,7 @@ class TitleReadSerializer(serializers.ModelSerializer):
             'rating',
             'description',
             'genre',
-            'category'
+            'category',
         )
 
 
@@ -70,18 +73,16 @@ class TitleWriteSerializer(serializers.ModelSerializer):
     genre = serializers.SlugRelatedField(
         slug_field='slug',
         queryset=Genre.objects.all(),
-        many=True
+        many=True,
     )
     category = serializers.SlugRelatedField(
         slug_field='slug',
-        queryset=Category.objects.all()
+        queryset=Category.objects.all(),
     )
 
     class Meta:
         model = Title
-        fields = (
-            'name', 'year', 'description', 'genre', 'category'
-        )
+        fields = ('name', 'year', 'description', 'genre', 'category')
 
     def to_representation(self, title):
         serializer = TitleReadSerializer(title)

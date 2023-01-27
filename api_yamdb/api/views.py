@@ -1,7 +1,7 @@
 from django.db.models import Avg
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, permissions, viewsets, mixins
 from rest_framework.generics import get_object_or_404
-from rest_framework.pagination import LimitOffsetPagination
 
 from reviews.models import Category, Title, Genre, Review
 from users.permissions import (
@@ -9,7 +9,8 @@ from users.permissions import (
     AnonimReadOnly,
     IsSuperUserIsAdminIsModeratorIsAuthor
 )
-from .serializers import (
+from api.filters import TitlesFilter
+from api.serializers import (
     CategorySerializer,
     TitleReadSerializer,
     TitleWriteSerializer,
@@ -33,6 +34,8 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(rating=Avg('reviews__score'))
     serializer_class = TitleReadSerializer
     permission_classes = (AnonimReadOnly | IsSuperUserOrIsAdminOnly,)
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = TitlesFilter
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -54,7 +57,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = (
         permissions.IsAuthenticatedOrReadOnly,
-        IsSuperUserIsAdminIsModeratorIsAuthor,  # ?
+        IsSuperUserIsAdminIsModeratorIsAuthor,
     )
 
     def get_queryset(self):
@@ -65,7 +68,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         review = get_object_or_404(
             Review,
             id=self.kwargs.get('review_id'),
-            title=self.kwargs.get('title_id')
+            title=self.kwargs.get('title_id'),
         )
         serializer.save(author=self.request.user, review=review)
 
@@ -74,7 +77,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = (
         permissions.IsAuthenticatedOrReadOnly,
-        IsSuperUserIsAdminIsModeratorIsAuthor
+        IsSuperUserIsAdminIsModeratorIsAuthor,
     )
 
     def get_queryset(self):
