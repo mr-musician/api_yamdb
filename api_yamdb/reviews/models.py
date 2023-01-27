@@ -9,6 +9,10 @@ class Category(models.Model):
     def __str__(self) -> str:
         return self.slug
 
+    # Добавить класс Meta в моделях, сделать сортировку
+    # чтоб тесты не ругались (там, где надо)
+    # verbose_name тоже думаю надо
+
 
 class Genre(models.Model):
     name = models.CharField(max_length=256)
