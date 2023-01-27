@@ -1,11 +1,11 @@
 from rest_framework import serializers
 
-from reviews.models import Title, Category, Genre, Comment, Review
+from reviews.models import Category, Comment, Genre, Review, Title
 
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
-        exclude = ('id', )
+        exclude = ('id',)
         model = Category
         lookup_field = 'slug'
 
@@ -39,14 +39,14 @@ class ReviewSerializer(serializers.ModelSerializer):
         title_id = self.context.get('view').kwargs.get('title_id')
         if Review.objects.filter(author=author, title=title_id).exists():
             raise serializers.ValidationError(
-                'Попытка создать отзыв на то же произведение.'
+                'Попытка создать отзыв на то же произведение.',
             )
         return data
 
 
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
-        exclude = ('id', )
+        exclude = ('id',)
         model = Genre
         lookup_field = 'slug'
 

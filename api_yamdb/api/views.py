@@ -1,29 +1,31 @@
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, permissions, viewsets, mixins
+from rest_framework import filters, mixins, permissions, viewsets
 from rest_framework.generics import get_object_or_404
 
-from reviews.models import Category, Title, Genre, Review
-from users.permissions import (
-    IsSuperUserOrIsAdminOnly,
-    AnonimReadOnly,
-    IsSuperUserIsAdminIsModeratorIsAuthor
-)
 from api.filters import TitlesFilter
 from api.serializers import (
     CategorySerializer,
+    CommentSerializer,
+    GenreSerializer,
+    ReviewSerializer,
     TitleReadSerializer,
     TitleWriteSerializer,
-    GenreSerializer,
-    CommentSerializer,
-    ReviewSerializer
+)
+from reviews.models import Category, Genre, Review, Title
+from users.permissions import (
+    AnonimReadOnly,
+    IsSuperUserIsAdminIsModeratorIsAuthor,
+    IsSuperUserOrIsAdminOnly,
 )
 
 
-class CreateListDestroyViewSet(mixins.CreateModelMixin,
-                               mixins.ListModelMixin,
-                               mixins.DestroyModelMixin,
-                               viewsets.GenericViewSet):
+class CreateListDestroyViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
     permission_classes = (AnonimReadOnly | IsSuperUserOrIsAdminOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
@@ -61,7 +63,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     )
 
     def get_queryset(self):
-        review = get_object_or_404(Review, pk=self.kwargs.get("review_id"))
+        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
         return review.comments.all()
 
     def perform_create(self, serializer):
