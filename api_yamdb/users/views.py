@@ -93,8 +93,9 @@ def signup(request):
     # По поводу вывода сообщения в респонс. Получилось через кастом дату,
     # но падают тесты.
     # custom_data = serializer.data
-    # custom_data["message"] = "Код выслан на почту" 
+    # custom_data["message"] = "Код выслан на почту"
     # И потом кастом дату в респонс, но тесты ругаются на меседж в дате.
+
     return Response(
         serializer.data,
         status=status.HTTP_200_OK
