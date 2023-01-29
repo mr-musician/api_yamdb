@@ -90,7 +90,12 @@ def signup(request):
         [user.email],
         fail_silently=False,
     )
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(
+        # Попробовал различные варианты добавить сюда сообщение - не вышло.
+        # 'Код выслан на почту.',
+        serializer.data,
+        status=status.HTTP_200_OK
+    )
 
 
 @api_view(['POST'])
