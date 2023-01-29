@@ -12,11 +12,7 @@ from .serializers import (
     ReviewSerializer
 )
 from reviews.models import Category, Genre, Review, Title
-from users.permissions import (
-    AnonimReadOnly,
-    IsSuperUserIsAdminIsModeratorIsAuthor,
-    IsSuperUserOrIsAdminOnly,
-)
+from users.permissions import IsAdminOrReadOnly, AuthorAdminModeratorOrReadOnly
 
 
 class CreateListDestroyViewSet(
@@ -25,7 +21,7 @@ class CreateListDestroyViewSet(
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
-    permission_classes = (AnonimReadOnly | IsSuperUserOrIsAdminOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
@@ -34,7 +30,7 @@ class CreateListDestroyViewSet(
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(rating=Avg('reviews__score'))
     serializer_class = TitleReadSerializer
-    permission_classes = (AnonimReadOnly | IsSuperUserOrIsAdminOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = [DjangoFilterBackend]
     filterset_class = TitlesFilter
 
@@ -57,8 +53,7 @@ class GenreViewSet(CreateListDestroyViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = (
-        permissions.IsAuthenticatedOrReadOnly,
-        IsSuperUserIsAdminIsModeratorIsAuthor,
+        AuthorAdminModeratorOrReadOnly,
     )
 
     def get_queryset(self):
@@ -77,8 +72,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = (
-        permissions.IsAuthenticatedOrReadOnly,
-        IsSuperUserIsAdminIsModeratorIsAuthor,
+        AuthorAdminModeratorOrReadOnly,
     )
 
     def get_queryset(self):

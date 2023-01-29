@@ -10,7 +10,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from users.models import CustomUser
 from users.pagination import UserPagination
-from users.permissions import IsSuperUserOrIsAdminOnly
+from users.permissions import IsAdminPermission
 from users.serializers import (
     RegistrationSerializer,
     TokenSerializer,
@@ -25,7 +25,7 @@ class UserViewSet(
 ):
     queryset = CustomUser.objects.all().order_by('id')
     serializer_class = UserSerializer
-    permission_classes = (IsSuperUserOrIsAdminOnly,)
+    permission_classes = (IsAdminPermission,)
     pagination_class = UserPagination
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
