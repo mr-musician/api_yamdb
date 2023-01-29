@@ -29,7 +29,6 @@ class RegistrationSerializer(serializers.Serializer):
         required=True,
         max_length=254,
     )
-
     def validate_username(self, value):
         if value in FORBIDDEN_NAMES:
             raise serializers.ValidationError(
