@@ -3,6 +3,8 @@ from rest_framework import serializers
 
 from users.models import CustomUser
 
+FORBIDDEN_NAMES = ['Me', 'me', 'ME', 'mE']
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -29,9 +31,9 @@ class RegistrationSerializer(serializers.Serializer):
     )
 
     def validate_username(self, value):
-        if value == 'me':
+        if value in FORBIDDEN_NAMES:
             raise serializers.ValidationError(
-                'Использование "me" в имени пользователя запрещено.',
+                'Недопустимое имя пользователя.',
             )
         return value
 
